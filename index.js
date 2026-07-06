@@ -3,6 +3,9 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 
+const auditLogsRoutes = require('./routes/auditLogs.routes');
+const recursosRoutes = require('./routes/recursos.routes');
+
 const app = express();
 const PORT = process.env.PORT || 5100;
 const MONGO_URI = process.env.MONGO_URI;
@@ -12,6 +15,9 @@ app.use(express.json());
 app.get('/', (req, res) => {
   res.send('Conexión a MongoDB establecida correctamente');
 });
+
+app.use('/api/logs', auditLogsRoutes);
+app.use('/api/recursos', recursosRoutes);
 
 app.get('/health', (req, res) => {
   res.json({
