@@ -9,6 +9,10 @@ const MONGO_URI = process.env.MONGO_URI;
 
 app.use(express.json());
 
+app.get('/', (req, res) => {
+  res.send('Conexión a MongoDB establecida correctamente');
+});
+
 app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
@@ -18,6 +22,7 @@ app.get('/health', (req, res) => {
 
 async function start() {
   await mongoose.connect(MONGO_URI);
+  console.log('Conexión a MongoDB establecida correctamente');
   app.listen(PORT, () => {
     console.log(`Servidor escuchando en el puerto ${PORT}`);
   });
