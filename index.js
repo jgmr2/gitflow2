@@ -3,6 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 
+const auditLogger = require('./middlewares/auditLogger');
 const auditLogsRoutes = require('./routes/auditLogs.routes');
 const recursosRoutes = require('./routes/recursos.routes');
 
@@ -11,6 +12,7 @@ const PORT = process.env.PORT || 5100;
 const MONGO_URI = process.env.MONGO_URI;
 
 app.use(express.json());
+app.use(auditLogger);
 
 app.get('/', (req, res) => {
   res.send('Conexión a MongoDB establecida correctamente');
@@ -24,6 +26,17 @@ app.get('/health', (req, res) => {
     status: 'ok',
     mongo: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
   });
+});
+
+app.use((err, req, res, next) => {
+  if (err.name === 'CastError') {
+    return res.status(400).json({ error: 'Identificador inválido' });
+  }
+  if (err.name === 'ValidationError') {
+    return res.status(400).json({ error: err.message });
+  }
+  console.error(err);
+  res.status(500).json({ error: 'Error interno del servidor' });
 });
 
 async function start() {
