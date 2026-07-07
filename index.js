@@ -3,6 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 
+const logger = require('./utils/logger');
 const auditLogger = require('./middlewares/auditLogger');
 const auditLogsRoutes = require('./routes/auditLogs.routes');
 const recursosRoutes = require('./routes/recursos.routes');
@@ -35,19 +36,19 @@ app.use((err, req, res, next) => {
   if (err.name === 'ValidationError') {
     return res.status(400).json({ error: err.message });
   }
-  console.error(err);
+  logger.error('Error no controlado en la petición', { error: err.message });
   res.status(500).json({ error: 'Error interno del servidor' });
 });
 
 async function start() {
   await mongoose.connect(MONGO_URI);
-  console.log('Conexión a MongoDB establecida correctamente');
+  logger.info('Conexión a MongoDB establecida correctamente');
   app.listen(PORT, () => {
-    console.log(`Servidor escuchando en el puerto ${PORT}`);
+    logger.info(`Servidor escuchando en el puerto ${PORT}`);
   });
 }
 
 start().catch((err) => {
-  console.error('Error al iniciar la aplicación:', err);
+  logger.error('Error al iniciar la aplicación', { error: err.message });
   process.exit(1);
 });

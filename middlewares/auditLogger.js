@@ -1,4 +1,5 @@
 const AuditLog = require('../models/AuditLog');
+const logger = require('../utils/logger');
 
 const AUDITED_METHODS = ['POST', 'PUT', 'DELETE'];
 
@@ -46,8 +47,10 @@ function auditLogger(req, res, next) {
       statusCode: res.statusCode,
     };
 
+    logger.info('audit', entry);
+
     AuditLog.create(entry).catch((err) => {
-      console.error('No se pudo guardar el registro de auditoría:', err.message);
+      logger.error('No se pudo guardar el registro de auditoría', { error: err.message });
     });
   });
 

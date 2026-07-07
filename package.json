@@ -12,6 +12,8 @@
   "dependencies": {
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "mongoose": "^9.7.3"
+    "mongoose": "^9.7.3",
+    "winston": "^3.19.0",
+    "winston-mongodb": "^7.0.1"
   }
 }
