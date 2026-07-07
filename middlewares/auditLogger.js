@@ -31,15 +31,20 @@ function auditLogger(req, res, next) {
     return next();
   }
 
-  // Se capturan aquí, no dentro de 'finish': Express muta req.url al
-  // atravesar routers anidados y solo lo restaura si el handler final
-  // llama a next(), cosa que nuestros controladores no hacen.
+  // method/path/ip se capturan aquí, no dentro de 'finish': Express muta
+  // req.url al atravesar routers anidados y solo lo restaura si el handler
+  // final llama a next(), cosa que nuestros controladores no hacen.
   const method = req.method;
   const path = req.path;
   const ip = req.ip;
-  const userId = req.user?.id || req.headers['x-user-id'] || 'anonymous';
 
   res.on('finish', () => {
+    // userId sí se lee aquí a propósito: este middleware corre antes que
+    // verifyToken (montado dentro del router de /api/recursos), así que
+    // req.user todavía no existe en este punto. Para 'finish' ya se ejecutó
+    // toda la cadena sobre el mismo objeto req, incluyendo verifyToken.
+    const userId = req.user?.id || req.headers['x-user-id'] || 'anonymous';
+
     const entry = {
       ip: sanitizeForLog(ip),
       userId: sanitizeForLog(userId),

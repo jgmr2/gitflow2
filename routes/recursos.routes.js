@@ -1,6 +1,7 @@
 const express = require('express');
 
 const asyncHandler = require('../utils/asyncHandler');
+const verifyToken = require('../middlewares/verifyToken');
 const {
   getRecursos,
   getRecursoById,
@@ -10,6 +11,8 @@ const {
 } = require('../controllers/recursos.controller');
 
 const router = express.Router();
+
+router.use(verifyToken);
 
 router.get('/', asyncHandler(getRecursos));
 router.get('/:id', asyncHandler(getRecursoById));
