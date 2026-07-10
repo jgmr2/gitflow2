@@ -13,6 +13,11 @@ const app = express();
 const PORT = process.env.PORT || 5100;
 const MONGO_URI = process.env.MONGO_URI;
 
+// Render (y su proxy/CDN delante) reenvía las peticiones a través de un
+// balanceador; sin esto, req.ip devolvería la IP interna del proxy en vez
+// de la IP real del cliente, invalidando el campo "IP de origen" del log.
+app.set('trust proxy', 1);
+
 app.use(express.json());
 app.use(auditLogger);
 
@@ -45,15 +50,18 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Error interno del servidor' });
 });
 
-async function start() {
-  await mongoose.connect(MONGO_URI);
-  logger.info('Conexión a MongoDB establecida correctamente');
-  app.listen(PORT, () => {
-    logger.info(`Servidor escuchando en el puerto ${PORT}`);
-  });
-}
+// El servidor HTTP arranca independientemente de Mongo: si la conexión a la
+// base de datos falla o tarda, Render igual detecta el puerto abierto en vez
+// de marcar el deploy como caído. El estado real de Mongo se expone en /health.
+mongoose.connection.on('error', (err) => {
+  logger.error('Error en la conexión a MongoDB', { error: err.message });
+});
 
-start().catch((err) => {
-  logger.error('Error al iniciar la aplicación', { error: err.message });
-  process.exit(1);
+mongoose
+  .connect(MONGO_URI)
+  .then(() => logger.info('Conexión a MongoDB establecida correctamente'))
+  .catch((err) => logger.error('No se pudo conectar a MongoDB', { error: err.message }));
+
+app.listen(PORT, () => {
+  logger.info(`Servidor escuchando en el puerto ${PORT}`);
 });
