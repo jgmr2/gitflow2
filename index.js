@@ -26,11 +26,12 @@ app.set('trust proxy', true);
 app.use(express.json());
 app.use(auditLogger);
 
-app.get('/', (req, res) => {
-  res.send('Conexión a MongoDB establecida correctamente');
-});
-
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+// app.use('/', ...) trata '/' como PREFIJO, no como ruta exacta: interceptaría
+// también /health, /api/logs, etc. Los assets estáticos de Swagger sí pueden ir
+// con app.use (solo responden si el archivo existe, si no llaman a next()),
+// pero la página en sí necesita app.get('/') para matchear únicamente la raíz.
+app.use(swaggerUi.serve);
+app.get('/', swaggerUi.setup(swaggerSpec));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/logs', auditLogsRoutes);
