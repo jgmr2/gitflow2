@@ -2,8 +2,10 @@ require('dotenv').config();
 
 const express = require('express');
 const mongoose = require('mongoose');
+const swaggerUi = require('swagger-ui-express');
 
 const logger = require('./utils/logger');
+const swaggerSpec = require('./utils/swagger');
 const auditLogger = require('./middlewares/auditLogger');
 const authRoutes = require('./routes/auth.routes');
 const auditLogsRoutes = require('./routes/auditLogs.routes');
@@ -13,10 +15,13 @@ const app = express();
 const PORT = process.env.PORT || 5100;
 const MONGO_URI = process.env.MONGO_URI;
 
-// Render (y su proxy/CDN delante) reenvía las peticiones a través de un
-// balanceador; sin esto, req.ip devolvería la IP interna del proxy en vez
-// de la IP real del cliente, invalidando el campo "IP de origen" del log.
-app.set('trust proxy', 1);
+// Render sirve detrás de Cloudflare + su propio balanceador (más de un
+// salto, y no controlamos cuántos). "true" confía en toda la cadena de
+// X-Forwarded-For y toma la IP pública original del cliente; con un número
+// fijo de saltos (ej. 1) req.ip terminaba devolviendo una IP privada interna
+// de la infraestructura de Render en vez de la IP real, invalidando el
+// campo "IP de origen" del log.
+app.set('trust proxy', true);
 
 app.use(express.json());
 app.use(auditLogger);
@@ -24,6 +29,8 @@ app.use(auditLogger);
 app.get('/', (req, res) => {
   res.send('Conexión a MongoDB establecida correctamente');
 });
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/logs', auditLogsRoutes);
