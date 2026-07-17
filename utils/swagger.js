@@ -13,8 +13,14 @@ const options = {
       { url: 'https://gitflow-n617.onrender.com', description: 'Producción (Render)' },
       { url: 'http://localhost:5100', description: 'Local (Docker)' },
     ],
+    security: [{ AppTokenAuth: [] }],
     components: {
       securitySchemes: {
+        AppTokenAuth: {
+          type: 'apiKey',
+          in: 'header',
+          name: 'app-token',
+        },
         bearerAuth: {
           type: 'http',
           scheme: 'bearer',

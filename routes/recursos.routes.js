@@ -21,7 +21,8 @@ router.use(verifyToken);
  *     summary: Lista todos los recursos
  *     tags: [Recursos]
  *     security:
- *       - bearerAuth: []
+ *       - AppTokenAuth: []
+ *         bearerAuth: []
  *     responses:
  *       200:
  *         description: Listado de recursos
@@ -47,7 +48,8 @@ router.get('/', asyncHandler(getRecursos));
  *     summary: Obtiene un recurso por id
  *     tags: [Recursos]
  *     security:
- *       - bearerAuth: []
+ *       - AppTokenAuth: []
+ *         bearerAuth: []
  *     parameters:
  *       - $ref: '#/components/parameters/RecursoId'
  *     responses:
@@ -85,7 +87,8 @@ router.get('/:id', asyncHandler(getRecursoById));
  *     summary: Crea un recurso (queda auditado)
  *     tags: [Recursos]
  *     security:
- *       - bearerAuth: []
+ *       - AppTokenAuth: []
+ *         bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -115,7 +118,8 @@ router.post('/', asyncHandler(createRecurso));
  *     summary: Actualiza un recurso (queda auditado)
  *     tags: [Recursos]
  *     security:
- *       - bearerAuth: []
+ *       - AppTokenAuth: []
+ *         bearerAuth: []
  *     parameters:
  *       - $ref: '#/components/parameters/RecursoId'
  *     requestBody:
@@ -159,7 +163,8 @@ router.put('/:id', asyncHandler(updateRecurso));
  *     summary: Elimina un recurso (queda auditado)
  *     tags: [Recursos]
  *     security:
- *       - bearerAuth: []
+ *       - AppTokenAuth: []
+ *         bearerAuth: []
  *     parameters:
  *       - $ref: '#/components/parameters/RecursoId'
  *     responses:

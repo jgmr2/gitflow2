@@ -7,6 +7,7 @@ const swaggerUi = require('swagger-ui-express');
 const logger = require('./utils/logger');
 const swaggerSpec = require('./utils/swagger');
 const auditLogger = require('./middlewares/auditLogger');
+const appTokenAuth = require('./middlewares/appTokenAuth');
 const authRoutes = require('./routes/auth.routes');
 const auditLogsRoutes = require('./routes/auditLogs.routes');
 const recursosRoutes = require('./routes/recursos.routes');
@@ -32,6 +33,13 @@ app.use(auditLogger);
 // pero la página en sí necesita app.get('/') para matchear únicamente la raíz.
 app.use(swaggerUi.serve);
 app.get('/', swaggerUi.setup(swaggerSpec));
+
+// Protege todos los endpoints de negocio con un application token (JWT
+// firmado con JWT_SECRET), enviado en el header app-token. Va antes de
+// las rutas de negocio pero no sobre '/' ni '/health': un navegador no
+// puede mandar headers custom solo navegando, y '/health' lo usa Render
+// para el healthcheck del servicio (no debe requerir credenciales).
+app.use('/api', appTokenAuth);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/logs', auditLogsRoutes);
