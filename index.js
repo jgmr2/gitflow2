@@ -1,6 +1,7 @@
 require('dotenv').config();
 
 const express = require('express');
+const helmet = require('helmet');
 const mongoose = require('mongoose');
 const swaggerUi = require('swagger-ui-express');
 
@@ -24,15 +25,21 @@ const MONGO_URI = process.env.MONGO_URI;
 // campo "IP de origen" del log.
 app.set('trust proxy', true);
 
-app.use(express.json());
-app.use(auditLogger);
-
 // app.use('/', ...) trata '/' como PREFIJO, no como ruta exacta: interceptaría
 // también /health, /api/logs, etc. Los assets estáticos de Swagger sí pueden ir
 // con app.use (solo responden si el archivo existe, si no llaman a next()),
 // pero la página en sí necesita app.get('/') para matchear únicamente la raíz.
-app.use(swaggerUi.serve);
-app.get('/', swaggerUi.setup(swaggerSpec));
+//
+// Swagger UI carga estilos/scripts inline, así que se le aplica helmet con
+// el Content-Security-Policy desactivado (si no, el navegador bloquea la
+// propia página de documentación). El resto de la app usa app.use(helmet())
+// más abajo, con el CSP por defecto completo.
+app.use(helmet({ contentSecurityPolicy: false }), swaggerUi.serve);
+app.get('/', helmet({ contentSecurityPolicy: false }), swaggerUi.setup(swaggerSpec));
+
+app.use(helmet());
+app.use(express.json());
+app.use(auditLogger);
 
 // Protege todos los endpoints de negocio con un application token (JWT
 // firmado con JWT_SECRET), enviado en el header app-token. Va antes de
